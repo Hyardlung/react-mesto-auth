@@ -1,0 +1,7 @@
+.card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 21px 18px 19px;
+  background-color: #fff;
+}
