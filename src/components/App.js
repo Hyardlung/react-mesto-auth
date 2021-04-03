@@ -16,6 +16,7 @@ import AddPlacePopup from './AddPlacePopup';
 import {ProtectedRoute} from './ProtectedRoute';
 import {Register} from './Register';
 import {Login} from './Login';
+import {InfoTooltip} from "./InfoTooltip";
 
 
 export default function App() {
@@ -207,6 +208,11 @@ export default function App() {
             submitButtonTitle="Да"
         >
         </PopupWithForm>
+
+        <InfoTooltip
+          onClose={closeAllPopups}
+          onCloseOverlay={handleCloseOverlay}
+        />
       </CurrentUserContext.Provider>
   );
 }
