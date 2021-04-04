@@ -1,14 +1,24 @@
 import {useState} from 'react'
-import {Link} from "react-router-dom";
 
 export const Login = ({onLogin}) => {
   const [userData, setUserData] = useState({
-    username: '',
-    email: ''
+    email: '',
+    password: ''
   })
+  const [message, setMessage] = useState('');
 
   const handleChange = (evt) => {
     const {name, value} = evt.target;
+    setUserData({
+      ...userData,
+      [name]: value
+    })
+  }
+
+  const handleSubmit = (evt) => {
+    evt.preventDefault();
+    onLogin(userData.email, userData.password)
+        .catch(err => setMessage(err.message || 'Что-то пошло не так'))
   }
 
   return (
@@ -18,7 +28,7 @@ export const Login = ({onLogin}) => {
             className="auth__form"
             action="#"
             noValidate
-            // onSubmit={handleSubmit}
+            onSubmit={handleSubmit}
         >
           <fieldset className="auth__form-fieldset">
             <input
@@ -27,21 +37,21 @@ export const Login = ({onLogin}) => {
                 type="email"
                 value={userData.email}
                 id="email-input"
-                // minLength="2"
-                // maxLength="40"
                 autoComplete="off"
                 placeholder="Email"
                 required
                 onChange={handleChange}
             />
-            <span className="auth__input-error" id="auth-email-input-error"> </span>
+            <span className="auth__input-error" id="auth-email-input-error">
+              {message}
+            </span>
             <input
                 className="auth__input"
                 name="password"
                 type="password"
                 value={userData.password}
                 id="password-input"
-                minLength="2"
+                minLength="8"
                 maxLength="30"
                 autoComplete="off"
                 placeholder="Пароль"

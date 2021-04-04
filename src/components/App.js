@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Redirect, Route, Switch} from 'react-router-dom';
+import {Redirect, Route, Switch, useHistory} from 'react-router-dom';
 
 import '../index.css';
 import {api} from '../utils/api';
@@ -14,24 +14,66 @@ import EditAvatarPopup from './EditAvatarPopup';
 import AddPlacePopup from './AddPlacePopup';
 
 import {ProtectedRoute} from './ProtectedRoute';
+import * as auth from '../auth';
 import {Register} from './Register';
 import {Login} from './Login';
 import {InfoTooltip} from "./InfoTooltip";
 
 
 export default function App() {
-  // СТЕЙТ-ПЕРЕМЕННЫЕ
-  // const [userData, setUserData] = useState({
-  //   username: '',
-  //   email: ''
-  // });
   const [loggedIn, setLoggedIn] = useState({
     loggedIn: false
   });
+  const [userData, setUserData] = useState({
+    email: '',
+    password: ''
+  });
+  const history = useHistory();
 
-  const handleLogin = () => {
-    setLoggedIn(true)
+  useEffect(() => {
+    tokenCheck()
+  }, [])
+  // useEffect(() => {
+  //   if (loggedIn) {
+  //     history.push('/')
+  //   }
+  // }, [loggedIn])
+
+  const tokenCheck = () => {
+    if (localStorage.getItem('jwt')) {    // если токен есть в localStorage,
+      let jwt = localStorage.getItem('jwt');    // берём его оттуда
+      if (jwt) {
+        auth.getContent(jwt).then(({email, password}) => {
+              if (email) {
+                setLoggedIn(true);
+                setUserData({email, password})
+              }
+            })
+      }
+    }
+  }
+
+  const handleLogin = ({email, password}) => {
+    console.log({email, password});
+    return auth.authorize(email, password)
+        .then(data => {
+          if (!data) throw new Error('Неверный емэйл или пароль')
+          if (data.jwt) {
+            setLoggedIn(true)
+            localStorage.setItem('jwt', data.jwt)
+            history.push('/');
+          }
+        })
   };
+
+  const handleRegister = ({email, password}) => {
+    console.log({email, password});
+    return auth.register({email, password})
+        .then(res => {
+          if (!res || res.statusCode === 400) throw new Error('Что-то пошло не так');
+          return res;
+        }).catch()
+  }
 
   const [cards, setCards] = useState([]);
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
@@ -143,10 +185,8 @@ export default function App() {
         <div className="page root__page" onKeyDown={handleEscClose}>
           <Header/>
           <Switch>
-            <ProtectedRoute
-                exact path="/"
-                loggedIn={handleLogin}
-                component={Main}
+            <ProtectedRoute exact path="/" loggedIn={loggedIn} component={Main}
+                userData={userData}
                 onEditProfile={handleEditProfileClick}
                 onAddPlace={handleAddPlaceClick}
                 onEditAvatar={handleEditAvatarClick}
@@ -156,10 +196,10 @@ export default function App() {
                 onCardDelete={handleCardDelete}
             />
             <Route path="/sign-in">
-              <Login/>
+              <Login onLogin={handleLogin}/>
             </Route>
             <Route path="/sign-up">
-              <Register/>
+              <Register onRegister={handleRegister}/>
             </Route>
 
             <Route>
