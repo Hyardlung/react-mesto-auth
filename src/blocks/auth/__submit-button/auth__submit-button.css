@@ -2,4 +2,12 @@
   padding: 14px 0;
   font-size: 18px;
   line-height: 1.22;
+  background-color: #fff;
+  border: none;
+  transition: opacity .3s;
+  cursor: pointer;
+}
+
+.auth__submit-button:hover:enabled {
+  opacity: .8;
 }

@@ -21,60 +21,6 @@ import {InfoTooltip} from "./InfoTooltip";
 
 
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState({
-    loggedIn: false
-  });
-  const [userData, setUserData] = useState({
-    email: '',
-    password: ''
-  });
-  const history = useHistory();
-
-  useEffect(() => {
-    tokenCheck()
-  }, [])
-  // useEffect(() => {
-  //   if (loggedIn) {
-  //     history.push('/')
-  //   }
-  // }, [loggedIn])
-
-  const tokenCheck = () => {
-    if (localStorage.getItem('jwt')) {    // если токен есть в localStorage,
-      let jwt = localStorage.getItem('jwt');    // берём его оттуда
-      if (jwt) {
-        auth.getContent(jwt).then(({email, password}) => {
-              if (email) {
-                setLoggedIn(true);
-                setUserData({email, password})
-              }
-            })
-      }
-    }
-  }
-
-  const handleLogin = ({email, password}) => {
-    console.log({email, password});
-    return auth.authorize(email, password)
-        .then(data => {
-          if (!data) throw new Error('Неверный емэйл или пароль')
-          if (data.jwt) {
-            setLoggedIn(true)
-            localStorage.setItem('jwt', data.jwt)
-            history.push('/');
-          }
-        })
-  };
-
-  const handleRegister = ({email, password}) => {
-    console.log({email, password});
-    return auth.register({email, password})
-        .then(res => {
-          if (!res || res.statusCode === 400) throw new Error('Что-то пошло не так');
-          return res;
-        }).catch()
-  }
-
   const [cards, setCards] = useState([]);
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
@@ -86,6 +32,12 @@ export default function App() {
     about: '',
     avatar: '',
   });
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userData, setUserData] = useState({
+    email: '',
+    password: ''
+  });
+  const history = useHistory();
 
   // хук, подтягивающий данные о пользователе и массив карточек с сервера
   useEffect(() => {
@@ -100,6 +52,31 @@ export default function App() {
         .catch(err => console.log(err));
   }, []);
 
+  useEffect(() => {
+    if (loggedIn) {
+      history.push('/main')
+    }
+  }, [history, loggedIn])
+
+  useEffect(() => {
+    tokenCheck()
+  }, [])
+
+  const tokenCheck = () => {
+    if (localStorage.getItem('jwt')) {    // если токен есть в localStorage,
+      let jwt = localStorage.getItem('jwt');    // берём его оттуда
+      if (jwt) {
+        auth.getContent(jwt)
+            .then(res => {
+              setLoggedIn(true);
+              setUserData(res.data.email);
+              history.push('/');
+            })
+            .catch(err => console.log(err));
+      }
+    }
+  }
+  
   // ОБРАБОТЧИКИ СОБЫТИЙ
   // открытие попапа редактирования профиля
   const handleEditProfileClick = () => {
@@ -179,13 +156,39 @@ export default function App() {
     setIsImagePopupOpen(false);
   }
 
+  const handleLogin = ({email, password}) => {
+    return auth.authorize(email, password)
+        .then(data => {
+          if (!data) throw new Error('Неверный емэйл или пароль')
+          if (data.jwt) {
+            setLoggedIn(true)
+            localStorage.setItem('jwt', data.jwt)
+            history.push('/main');
+          }
+        })
+  };
+
+  const handleRegister = ({email, password}) => {
+    return auth.register({email, password})
+        .then(res => {
+          if (!res || res.statusCode === 400) throw new Error('Что-то пошло не так');
+          return res;
+        }).catch()
+  }
+
+  const handleSignOut = () => {
+    localStorage.removeItem('jwt');
+    setLoggedIn(false);
+    setUserData({email: ''});
+    history.push('/sign-in');
+  }
 
   return (
       <CurrentUserContext.Provider value={currentUser}>
         <div className="page root__page" onKeyDown={handleEscClose}>
-          <Header/>
+          <Header loggedIn={loggedIn} userEmail={userData.email} handleSignOut={handleSignOut} />
           <Switch>
-            <ProtectedRoute exact path="/" loggedIn={loggedIn} component={Main}
+            <ProtectedRoute exact path="/main" loggedIn={loggedIn} component={Main}
                 userData={userData}
                 onEditProfile={handleEditProfileClick}
                 onAddPlace={handleAddPlaceClick}
