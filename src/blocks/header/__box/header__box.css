@@ -1,0 +1,6 @@
+.header__box {
+  display: flex;
+  justify-content: space-between;
+  max-width: 221px;
+  max-height: 22px;
+}
