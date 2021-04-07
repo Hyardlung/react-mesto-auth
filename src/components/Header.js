@@ -9,7 +9,7 @@ export default function Header({loggedIn, handleSignOut, userEmail}) {
               (
                 <>
                   <span className="header__email">{userEmail}</span>
-                  <Link to="" className="header__link" onClick={handleSignOut}>Выйти</Link>
+                  <Link to="" className="header__link header__link_signout" onClick={handleSignOut}>Выйти</Link>
                 </>
               ) : (
                   <Switch>

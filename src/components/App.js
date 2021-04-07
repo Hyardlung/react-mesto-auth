@@ -18,25 +18,22 @@ import * as auth from '../auth';
 import {Register} from './Register';
 import {Login} from './Login';
 import {InfoTooltip} from "./InfoTooltip";
-
+import tooltipDeny from '../images/tooltip-deny.svg';
+import tooltipSuccess from '../images/tooltip-success.svg'
 
 export default function App() {
   const [cards, setCards] = useState([]);
-  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
-  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
-  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
-  const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
+  const [isEditProfilePopupOpen, setEditProfilePopupOpen] = useState(false);
+  const [isAddPlacePopupOpen, setAddPlacePopupOpen] = useState(false);
+  const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = useState(false);
+  const [isImagePopupOpen, setImagePopupOpen] = useState(false);
+  const [isInfoToolTip, setInfoToolTip] = useState(false);
+  const [infoMessage, setInfoMessage] = useState({icon: '', caption: ''})
   const [selectedCard, setSelectedCard] = useState({});
-  const [currentUser, setCurrentUser] = useState({
-    name: '',
-    about: '',
-    avatar: '',
-  });
+  const [currentUser, setCurrentUser] = useState({name: '', about: '', avatar: ''});
+  const [userData, setUserData] = useState({email: '', password: ''});
+  const [userEmail, setUserEmail] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
-  const [userData, setUserData] = useState({
-    email: '',
-    password: ''
-  });
   const history = useHistory();
 
   // хук, подтягивающий данные о пользователе и массив карточек с сервера
@@ -53,48 +50,107 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    tokenCheck()
+  }, [])
+
+  useEffect(() => {
     if (loggedIn) {
       history.push('/main')
     }
   }, [history, loggedIn])
 
-  useEffect(() => {
-    tokenCheck()
-  }, [])
+  // Регистрация
+  const handleRegister = ({email, password}) => {
+    return auth.register({email, password})
+        .then(res => {
+          if (res) {
+            handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно зарегистрировались!'});
+            handleInfoToolTipVisible(true);
+            history.push('/sign-in');
+          }
+        }).catch(err => {
+          handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
+          handleInfoToolTipVisible(true);
+          console.log(err);
+        })
+  };
 
+  // Авторизация
+  const handleLogin = ({email, password}) => {
+    auth.authorize(email, password)
+        .then(data => {
+          console.log(data)
+          if (!data) throw new Error('Неверные имя пользователя или пароль')
+          if (data.token) {
+            setLoggedIn(true);
+            auth.getContent(data.token)
+                .then(res => {
+                  if (res) {
+                    setLoggedIn(true);
+                    setUserEmail(res.data.email);
+                  }
+                })
+            localStorage.setItem('jwt', data.token);
+            history.push('/main')
+            handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно авторизовались!'});
+            handleInfoToolTipVisible(true);
+          }
+        }).catch(err => {
+          handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
+          handleInfoToolTipVisible(true);
+          console.log(err);
+        });
+  };
+
+  // Проверка токена
   const tokenCheck = () => {
     if (localStorage.getItem('jwt')) {    // если токен есть в localStorage,
       let jwt = localStorage.getItem('jwt');    // берём его оттуда
-      if (jwt) {
-        auth.getContent(jwt)
-            .then(res => {
+      auth.getContent(jwt)
+          .then(res => {
+            if (res) {
               setLoggedIn(true);
-              setUserData(res.data.email);
-              history.push('/');
-            })
-            .catch(err => console.log(err));
-      }
+              setUserEmail(res.data.email);
+            }
+          })
+          .catch(err => console.log(err));
     }
-  }
-  
+  };
+  // Выход
+  const handleSignOut = () => {
+    localStorage.removeItem('jwt');
+    setLoggedIn(false);
+    setUserData({email: ''});
+    history.push('/sign-in');
+  };
+
   // ОБРАБОТЧИКИ СОБЫТИЙ
   // открытие попапа редактирования профиля
   const handleEditProfileClick = () => {
-    setIsEditProfilePopupOpen(true);
+    setEditProfilePopupOpen(true);
   }
   // открытие попапа добавления новой карточки
   const handleAddPlaceClick = () => {
-    setIsAddPlacePopupOpen(true);
+    setAddPlacePopupOpen(true);
   }
   // открытие попапа обновления аватара пользователя
   const handleEditAvatarClick = () => {
-    setIsEditAvatarPopupOpen(true);
+    setEditAvatarPopupOpen(true);
   }
   // открытие попапа предпросмотра карточки
   const handleCardClick = ({name, link}) => {
     setSelectedCard({name, link});
-    setIsImagePopupOpen(true);
+    setImagePopupOpen(true);
   }
+  // открытие тултипа со статусом регистрации
+  const handleInfoToolTipVisible = () => {
+    setInfoToolTip(true)
+  }
+  // изменение контента тултипа в зависимости от статуса регистрации
+  const handleInfoToolTipStatus = ({icon, caption}) => {
+    setInfoMessage({icon: icon, caption: caption})
+  }
+
   // лайк карточки
   const handleCardLike = card => {
     const isLiked = card.likes.some(like => like._id === currentUser._id);
@@ -149,54 +205,28 @@ export default function App() {
 
   // закрытие любого из попапов
   const closeAllPopups = () => {
-    setIsEditProfilePopupOpen(false);
-    setIsAddPlacePopupOpen(false);
-    setIsEditAvatarPopupOpen(false);
+    setEditProfilePopupOpen(false);
+    setAddPlacePopupOpen(false);
+    setEditAvatarPopupOpen(false);
     setSelectedCard(false);
-    setIsImagePopupOpen(false);
-  }
-
-  const handleLogin = ({email, password}) => {
-    return auth.authorize(email, password)
-        .then(data => {
-          if (!data) throw new Error('Неверный емэйл или пароль')
-          if (data.jwt) {
-            setLoggedIn(true)
-            localStorage.setItem('jwt', data.jwt)
-            history.push('/main');
-          }
-        })
-  };
-
-  const handleRegister = ({email, password}) => {
-    return auth.register({email, password})
-        .then(res => {
-          if (!res || res.statusCode === 400) throw new Error('Что-то пошло не так');
-          return res;
-        }).catch()
-  }
-
-  const handleSignOut = () => {
-    localStorage.removeItem('jwt');
-    setLoggedIn(false);
-    setUserData({email: ''});
-    history.push('/sign-in');
+    setImagePopupOpen(false);
+    setInfoToolTip(false);
   }
 
   return (
       <CurrentUserContext.Provider value={currentUser}>
         <div className="page root__page" onKeyDown={handleEscClose}>
-          <Header loggedIn={loggedIn} userEmail={userData.email} handleSignOut={handleSignOut} />
+          <Header loggedIn={loggedIn} userEmail={userEmail} handleSignOut={handleSignOut}/>
           <Switch>
             <ProtectedRoute exact path="/main" loggedIn={loggedIn} component={Main}
-                userData={userData}
-                onEditProfile={handleEditProfileClick}
-                onAddPlace={handleAddPlaceClick}
-                onEditAvatar={handleEditAvatarClick}
-                cards={cards}
-                onCardClick={handleCardClick}
-                onCardLike={handleCardLike}
-                onCardDelete={handleCardDelete}
+                            userData={userData}
+                            onEditProfile={handleEditProfileClick}
+                            onAddPlace={handleAddPlaceClick}
+                            onEditAvatar={handleEditAvatarClick}
+                            cards={cards}
+                            onCardClick={handleCardClick}
+                            onCardLike={handleCardLike}
+                            onCardDelete={handleCardDelete}
             />
             <Route path="/sign-in">
               <Login onLogin={handleLogin}/>
@@ -206,7 +236,7 @@ export default function App() {
             </Route>
 
             <Route>
-              {loggedIn ? <Redirect to="/" /> : <Redirect to="/sign-in" />}
+              {loggedIn ? <Redirect to="/"/> : <Redirect to="/sign-in"/>}
             </Route>
           </Switch>
           {loggedIn && <Footer/>}
@@ -253,8 +283,10 @@ export default function App() {
         </PopupWithForm>
 
         <InfoTooltip
-          onClose={closeAllPopups}
-          onCloseOverlay={handleCloseOverlay}
+            infoMessage={infoMessage}
+            isOpen={isInfoToolTip}
+            onClose={closeAllPopups}
+            onCloseOverlay={handleCloseOverlay}
         />
       </CurrentUserContext.Provider>
   );
