@@ -1,0 +1,9 @@
+.page__header {
+  padding: 45px 19px 0;
+}
+
+@media screen and (max-width: 930px) {
+  .page__header {
+    padding-top: clamp(28px, 9vw, 45px);
+  }
+}

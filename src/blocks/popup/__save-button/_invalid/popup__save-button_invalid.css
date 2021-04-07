@@ -1,0 +1,7 @@
+.popup__save-button_invalid {
+  color: #C4C4C4;
+  background-color: transparent;
+  border: 1px solid #C4C4C4;
+  border-radius: 2px;
+  opacity: .2;
+}

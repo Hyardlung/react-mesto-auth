@@ -1,0 +1,9 @@
+.page__footer {
+  margin: 66px 0 0;
+}
+
+@media screen and (max-width: 930px) {
+  .page__footer {
+    margin-top: clamp(48px, 7.3vw, 66px);
+  }
+}
