@@ -62,12 +62,10 @@ export default function App() {
   // Регистрация
   const handleRegister = ({email, password}) => {
     return auth.register({email, password})
-        .then(res => {
-          if (res) {
+        .then(() => {
             handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно зарегистрировались!'});
             handleInfoToolTipVisible(true);
             history.push('/sign-in');
-          }
         }).catch(err => {
           handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
           handleInfoToolTipVisible(true);
