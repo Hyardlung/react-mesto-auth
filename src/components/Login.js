@@ -5,7 +5,6 @@ export const Login = ({onLogin}) => {
     email: '',
     password: ''
   })
-  const [message, setMessage] = useState('');
 
   const handleChange = (evt) => {
     const {name, value} = evt.target;
@@ -17,8 +16,7 @@ export const Login = ({onLogin}) => {
 
   const handleSubmit = (evt) => {
     evt.preventDefault();
-    onLogin(userData.email, userData.password)
-        .catch(err => setMessage(err.message || 'Что-то пошло не так'))
+    onLogin(userData)
   }
 
   return (
@@ -42,9 +40,7 @@ export const Login = ({onLogin}) => {
                 required
                 onChange={handleChange}
             />
-            <span className="auth__input-error" id="auth-email-input-error">
-              {message}
-            </span>
+            <span className="auth__input-error" id="auth-email-input-error"> </span>
             <input
                 className="auth__input"
                 name="password"

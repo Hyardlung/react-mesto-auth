@@ -7,8 +7,6 @@ export const Register = ({onRegister}) => {
     password: '',
   });
 
-  const [message, setMessage] = useState();
-
   const handleChange = (evt) => {
     const {name, value} = evt.target;
     setUserData({
@@ -21,7 +19,7 @@ export const Register = ({onRegister}) => {
     let {email, password} = userData;
     evt.preventDefault();
     onRegister({email, password})
-        .catch(err => setMessage(err.message || 'Что-то пошло не так'));
+        .catch(err => console.log(err.message || 'Что-то пошло не так'));
   }
 
   return (
@@ -45,9 +43,7 @@ export const Register = ({onRegister}) => {
                 required
                 onChange={handleChange}
             />
-            <span className="auth__input-error" id="auth-email-input-error">
-              {message}
-            </span>
+            <span className="auth__input-error" id="auth-email-input-error"> </span>
             <input
                 className="auth__input"
                 name="password"
