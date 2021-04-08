@@ -77,8 +77,10 @@ export default function App() {
   const handleLogin = ({email, password}) => {
     auth.authorize(email, password)
         .then(data => {
-          console.log(data)
-          if (!data) throw new Error('Неверные имя пользователя или пароль')
+          if (!data) {
+            handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
+            handleInfoToolTipVisible(true);
+          }
           if (data.token) {
             setLoggedIn(true);
             auth.getContent(data.token)
