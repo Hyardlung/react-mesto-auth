@@ -63,9 +63,9 @@ export default function App() {
   const handleRegister = ({email, password}) => {
     return auth.register({email, password})
         .then(() => {
+            history.push('/sign-in');
             handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно зарегистрировались!'});
             handleInfoToolTipVisible(true);
-            history.push('/sign-in');
         }).catch(err => {
           handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
           handleInfoToolTipVisible(true);
@@ -87,13 +87,14 @@ export default function App() {
                 .then(res => {
                   if (res) {
                     setLoggedIn(true);
-                    setUserEmail(res.data.email);
+                    setUserEmail(res.data.email)
+                    localStorage.setItem('jwt', data.token);
+                    handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно авторизовались!'});
+                    handleInfoToolTipVisible(true);
+                    history.push('/main')
                   }
                 })
-            localStorage.setItem('jwt', data.token);
-            history.push('/main')
-            handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно авторизовались!'});
-            handleInfoToolTipVisible(true);
+
           }
         }).catch(err => {
           handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
