@@ -36,36 +36,14 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const history = useHistory();
 
-  // хук, подтягивающий данные о пользователе и массив карточек с сервера
-  useEffect(() => {
-    Promise.all([
-      api.getRemoteCards(),
-      api.getUserData()
-    ])
-        .then(([remoteCards, userData]) => {
-          setCards(remoteCards);
-          setCurrentUser(userData);
-        })
-        .catch(err => console.log(err));
-  }, []);
-
-  useEffect(() => {
-    tokenCheck()
-  }, [])
-
-  useEffect(() => {
-    if (loggedIn) {
-      history.push('/main')
-    }
-  }, [history, loggedIn])
 
   // Регистрация
   const handleRegister = ({email, password}) => {
     return auth.register({email, password})
         .then(() => {
-            history.push('/sign-in');
-            handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно зарегистрировались!'});
-            handleInfoToolTipVisible(true);
+          history.push('/sign-in');
+          handleInfoToolTipStatus({icon: tooltipSuccess, caption: 'Вы успешно зарегистрировались!'});
+          handleInfoToolTipVisible(true);
         }).catch(err => {
           handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
           handleInfoToolTipVisible(true);
@@ -97,10 +75,10 @@ export default function App() {
 
           }
         }).catch(err => {
-          handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
-          handleInfoToolTipVisible(true);
-          console.log(err);
-        });
+      handleInfoToolTipStatus({icon: tooltipDeny, caption: 'Что-то пошло не так! Попробуйте ещё раз.'});
+      handleInfoToolTipVisible(true);
+      console.log(err);
+    });
   };
 
   // Проверка токена
@@ -113,19 +91,28 @@ export default function App() {
               setLoggedIn(true);
               setUserEmail(res.data.email);
             }
+            if (!res) {
+              handleLogout('jwt');
+            }
           })
           .catch(err => console.log(err));
     }
+
   };
+
+  // удаление токена из localStorage при разлогине
+  const handleLogout = (token) => {
+    localStorage.removeItem(token);
+    setLoggedIn(false);
+  }
+
   // Выход
   const handleSignOut = () => {
-    localStorage.removeItem('jwt');
-    setLoggedIn(false);
+    handleLogout('jwt');
     setUserData({email: ''});
     history.push('/sign-in');
   };
 
-  // ОБРАБОТЧИКИ СОБЫТИЙ
   // открытие попапа редактирования профиля
   const handleEditProfileClick = () => {
     setEditProfilePopupOpen(true);
@@ -213,6 +200,30 @@ export default function App() {
     setImagePopupOpen(false);
     setInfoToolTip(false);
   }
+
+  // хук, подтягивающий данные о пользователе и массив карточек с сервера
+  useEffect(() => {
+    Promise.all([
+      api.getRemoteCards(),
+      api.getUserData()
+    ])
+        .then(([remoteCards, userData]) => {
+          setCards(remoteCards);
+          setCurrentUser(userData);
+        })
+        .catch(err => console.log(err));
+  }, []);
+  // проверка токена при входе в приложение
+  useEffect(() => {
+    tokenCheck()
+    // eslint-disable-next-line
+  }, [])
+  // проверка активной авторизации при входе в приложение и редирект на главный экран в случае успеха
+  useEffect(() => {
+    if (loggedIn) {
+      history.push('/main')
+    }
+  }, [history, loggedIn])
 
   return (
       <CurrentUserContext.Provider value={currentUser}>
