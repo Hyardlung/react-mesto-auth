@@ -1,5 +1,5 @@
 .page__auth {
   margin: 60px auto 0;
-  max-width: 358px;
+  max-width: clamp(282px, 89vw, 360px);
   color: #fff;
 }
