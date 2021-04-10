@@ -10,3 +10,9 @@
 .header__link:hover {
   opacity: .6;
 }
+
+@media screen and (max-width: 550px) {
+  .header__link {
+    font-size: clamp(14px, 15px, 18px);
+  }
+}

@@ -78,7 +78,7 @@
 
 /* auth */
 @import url('blocks/auth/auth.css');
-@import url('./blocks/page/__login/page__login.css');
+@import url('blocks/page/__auth/page__auth.css');
 @import url('blocks/auth/__title/auth__title.css');
 @import url('blocks/auth/__form/auth__form.css');
 @import url('blocks/auth/__form-fieldset/auth__form-fieldset.css');

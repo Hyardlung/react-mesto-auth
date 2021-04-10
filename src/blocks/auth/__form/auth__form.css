@@ -2,5 +2,5 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 352px;
+  height: 37.5vh;
 }
