@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://auth.nomoreparties.co';
+export const BASE_URL = 'https://api.hyardlung-frontend.nomoredomains.icu;';
 
 export const register = ({email, password}) => {
   return fetch(`${BASE_URL}/signup`, {
@@ -31,7 +31,7 @@ export const getContent = (token) => {
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `${token}`
     }
   })
       .then(checkResponse)
